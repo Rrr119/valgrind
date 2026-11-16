@@ -1,0 +1,14 @@
+#!/bin/sh
+
+dir=`dirname $0`
+
+# Keep the read stream of the read tests and the write stream of the write
+# tests, avoiding prologue stack accesses in the other direction.
+awk '
+   /^memaccess;READ;(sequential|random|strided)_reads;/ ||
+   /^memaccess;WRITE;(sequential|random|strided)_writes;/ {
+      print
+   }
+' |
+$dir/../../tests/filter_numbers |
+LC_ALL=C sort

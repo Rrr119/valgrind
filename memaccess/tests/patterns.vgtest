@@ -1,0 +1,5 @@
+prog: patterns
+vgopts: --flamegraph-out-file=patterns.fold
+stderr_filter: filter_stderr
+post: cat patterns.fold | ./filter_flame
+cleanup: rm -f patterns.fold

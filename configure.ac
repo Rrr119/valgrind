@@ -4743,6 +4743,8 @@ AC_CONFIG_FILES([
    massif/ms_print
    dhat/Makefile
    dhat/tests/Makefile
+   memaccess/Makefile
+   memaccess/tests/Makefile
    lackey/Makefile
    lackey/tests/Makefile
    none/Makefile

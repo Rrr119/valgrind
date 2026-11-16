@@ -202,6 +202,17 @@ system: <filename>&vg-docs-path;</filename>, or online:
 
 
 
+<refsect1 id="memaccess-options">
+<title>MemAccess Options</title>
+
+<xi:include href="../../memaccess/docs/ma-manual.xml"
+            xpointer="ma.opts.list"
+            xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+</refsect1>
+
+
+
 <refsect1 id="sgcheck-options">
 <title>SGcheck Options</title>
 

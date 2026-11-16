@@ -60,6 +60,13 @@ and without disturbing the existing structure.</para>
   </listitem>
 
   <listitem>
+    <para><command>MemAccess</command> profiles data access patterns.  It
+    reports per-function read/write counts, address strides, and
+    sequential, strided, or random behaviour, and emits flame graph
+    data.</para>
+  </listitem>
+
+  <listitem>
     <para><command>SGcheck</command> is an experimental tool that can
     detect overruns of stack and global arrays.  Its functionality is
     complementary to that of Memcheck: SGcheck finds problems that

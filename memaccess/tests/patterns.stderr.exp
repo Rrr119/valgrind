@@ -1,0 +1,8 @@
+Function Reads Writes R-stride R-pattern W-stride W-pattern
+random_reads ... ... ... random -... sequential
+random_writes ... ... - n/a ... random
+sequential_reads ... ... ... sequential -... sequential
+sequential_writes ... ... - n/a ... sequential
+strided_reads ... ... ... strided -... sequential
+strided_writes ... ... - n/a ... strided
+MemAccess: folded flame graph data written to patterns.fold

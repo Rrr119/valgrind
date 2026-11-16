@@ -740,6 +740,29 @@
 /lackey/tests/*.stdout.diff*
 /lackey/tests/*.stdout.out
 
+# /memaccess/
+/memaccess/*.dSYM
+/memaccess/.deps
+/memaccess/memaccess-*-darwin
+/memaccess/memaccess-*-linux
+/memaccess/memaccess-*-solaris
+/memaccess/Makefile
+/memaccess/Makefile.in
+
+# /memaccess/tests/
+/memaccess/tests/*.dSYM
+/memaccess/tests/*.post.diff*
+/memaccess/tests/*.post.out
+/memaccess/tests/*.stderr.diff*
+/memaccess/tests/*.stderr.out
+/memaccess/tests/*.stdout.diff*
+/memaccess/tests/*.stdout.out
+/memaccess/tests/.deps
+/memaccess/tests/Makefile
+/memaccess/tests/Makefile.in
+/memaccess/tests/patterns
+/memaccess/tests/patterns.fold
+
 # /massif/
 /massif/*.dSYM
 /massif/*.so

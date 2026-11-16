@@ -1,0 +1,175 @@
+<?xml version="1.0"?> <!-- -*- sgml -*- -->
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+  "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+
+<chapter id="ma-manual" xreflabel="MemAccess">
+
+<title>MemAccess: memory access pattern profiling</title>
+
+<para>To use this tool, you must specify
+<option>--tool=memaccess</option> on the Valgrind command line.</para>
+
+<para>MemAccess is useful when Memcheck reports many invalid accesses and
+the individual errors do not make the underlying traversal pattern obvious.
+It records data loads and stores, attributes them to the guest function
+containing the accessing instruction, and summarizes how each function
+walks through memory.</para>
+
+<sect1 id="ma-manual.overview" xreflabel="Overview">
+<title>Overview</title>
+
+<para>For every function, MemAccess reports the number of reads and writes,
+the most common address stride, and one of these access patterns:</para>
+
+<variablelist>
+
+  <varlistentry>
+    <term><computeroutput>sequential</computeroutput></term>
+    <listitem>
+      <para>At least <option>--sequential-threshold</option> percent of
+      consecutive accesses in that direction advance by exactly the access
+      size, either forwards or backwards.</para>
+    </listitem>
+  </varlistentry>
+
+  <varlistentry>
+    <term><computeroutput>strided</computeroutput></term>
+    <listitem>
+      <para>At least <option>--sequential-threshold</option> percent of
+      consecutive accesses use one constant stride that is not equal to the
+      access size.  This includes repeated accesses to one address
+      (stride zero).  For example, reading every second element of an array
+      produces a strided pattern.</para>
+    </listitem>
+  </varlistentry>
+
+  <varlistentry>
+    <term><computeroutput>random</computeroutput></term>
+    <listitem>
+      <para>Neither of the conditions above is met.  This includes pointer
+      chasing, hash-table walks, and interleaved traversals that frequently
+      switch between unrelated addresses.</para>
+    </listitem>
+  </varlistentry>
+
+  <varlistentry>
+    <term><computeroutput>n/a</computeroutput></term>
+    <listitem>
+      <para>The function has fewer than two accesses in that direction, so
+      no stride can be calculated.</para>
+    </listitem>
+  </varlistentry>
+
+</variablelist>
+
+<para>Reads and writes are tracked independently.  Read-modify-write
+operations count as both one read and one write.  Instruction fetches are
+not included.  The stride is the difference between consecutive data
+addresses observed for the same function and direction.  Compute the
+pattern separately for each function so that unrelated functions do not
+contaminate each other's streams.</para>
+
+<para>Valgrind instruments all guest code, so the table also contains
+library functions and stack accesses.  Focus on the function names from
+the part of the program being investigated.</para>
+
+</sect1>
+
+<sect1 id="ma-manual.output" xreflabel="Output">
+<title>Output</title>
+
+<para>A summary table is printed on Valgrind's normal output channel.  For
+example:</para>
+
+<programlisting>
+Function                         Reads       Writes  R-stride  R-pattern  W-stride  W-pattern
+parse_packet                        4096         1024         4 sequential        -        n/a
+lookup_chain                         731            0        16    strided        -        n/a
+</programlisting>
+
+<para>MemAccess also writes folded stack data for flame graph tools.  The
+data is written to <computeroutput>memaccess.out.%p</computeroutput> by
+default, where <computeroutput>%p</computeroutput> is the process ID.  Each
+line has the form:</para>
+
+<programlisting>
+memaccess;READ;parse_packet;sequential 4096
+memaccess;WRITE;parse_packet;sequential 1024
+</programlisting>
+
+<para>The counts are memory access counts.  Function names are used as
+frames; this tool intentionally does not unwind the call stack.  This makes
+the data cheap to collect and keeps attribution stable even when debug
+information for callers is incomplete.  Feed the file directly to
+<computeroutput>flamegraph.pl</computeroutput>, for example:</para>
+
+<programlisting>
+flamegraph.pl memaccess.out.12345 &gt; memaccess.svg
+</programlisting>
+
+<para>Function names have whitespace and semicolons replaced with
+underscores so that they remain valid folded-stack frame names.</para>
+
+</sect1>
+
+<sect1 id="ma-manual.options" xreflabel="MemAccess Command-line Options">
+<title>MemAccess Command-line Options</title>
+
+<para>MemAccess-specific command-line options are:</para>
+
+<!-- start of xi:include in the manpage -->
+<variablelist id="ma.opts.list">
+
+  <varlistentry id="opt.flamegraph-out-file" xreflabel="--flamegraph-out-file">
+    <term>
+      <option><![CDATA[--flamegraph-out-file=<file> [default: memaccess.out.%p] ]]></option>
+    </term>
+    <listitem>
+      <para>Write folded flame graph data to <filename>file</filename>.
+      The usual Valgrind file-name substitutions, including
+      <computeroutput>%p</computeroutput>, are supported.</para>
+    </listitem>
+  </varlistentry>
+
+  <varlistentry id="opt.sequential-threshold" xreflabel="--sequential-threshold">
+    <term>
+      <option><![CDATA[--sequential-threshold=<0..100> [default: 90] ]]></option>
+    </term>
+    <listitem>
+      <para>Set the minimum percentage of transitions that must have a
+      particular stride before a stream is classified as sequential or
+      strided.  Lower values classify more streams as regular; higher values
+      require a stronger pattern.</para>
+    </listitem>
+  </varlistentry>
+
+</variablelist>
+<!-- end of xi:include in the manpage -->
+
+</sect1>
+
+<sect1 id="ma-manual.limitations" xreflabel="Limitations">
+<title>Limitations</title>
+
+  <para>MemAccess observes guest virtual addresses.  It does not account for
+physical-page mapping, and Valgrind's own address layout can differ from a
+native run.  The pattern is based on consecutive accesses in program order
+within one function; it does not reconstruct higher-level objects or loop
+nesting.  Accesses to multiple interleaved buffers in one function share
+the same stream and may therefore be classified as random.  Multi-threaded
+executions also share one stream per function, so interleaving by different
+threads can make a regular stream appear random.</para>
+
+<para>The tool is substantially slower than native execution because every
+load and store calls a helper.  Use it after Memcheck has identified the
+interesting part of a program, or on a reduced reproduction.</para>
+
+<para>As with other Valgrind tools, VEX optimisation can remove guest loads
+whose results are dead.  Such accesses are not observable by MemAccess at
+the default optimisation level.  Use
+<option>--vex-iropt-level=0</option> when an exhaustive raw load trace is
+required.</para>
+
+</sect1>
+
+</chapter>

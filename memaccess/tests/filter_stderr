@@ -1,0 +1,22 @@
+#!/bin/sh
+
+dir=`dirname $0`
+
+$dir/../../tests/filter_stderr_basic |
+
+# Remove the tool banner and the copyright line that follows it.
+sed "/^MemAccess, a memory access pattern profiler/ , /./ d" |
+
+# Keep the summary table and only the functions exercised by the test.
+awk '
+   /^Function / ||
+   /^(sequential|random|strided)_(reads|writes) / ||
+   /^MemAccess: folded flame graph data written to / {
+      print
+   }
+' |
+
+sed "s|^MemAccess: folded flame graph data written to .*/|MemAccess: folded flame graph data written to |" |
+
+../../tests/filter_numbers |
+sed -e "s/  */ /g" -e "s/ *$//"

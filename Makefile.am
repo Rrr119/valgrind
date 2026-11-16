@@ -11,6 +11,7 @@ TOOLS = \
 		drd \
 		massif \
 		dhat \
+		memaccess \
 		lackey \
 		none
 

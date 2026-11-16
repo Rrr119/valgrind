@@ -29,6 +29,12 @@ support for X86/macOS 10.13 and AMD64/macOS 10.13.
 
 * DHAT:
 
+* MemAccess:
+
+  - New tool for summarizing per-function read/write counts, address
+    strides, and sequential/strided/random access patterns.  It also
+    emits folded stack data for flame graphs.
+
 * Cachegrind:
 
 * Callgrind:
